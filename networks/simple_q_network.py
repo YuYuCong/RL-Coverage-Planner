@@ -63,7 +63,8 @@ class SimpleDeepQNetworkGenerator2:
         self.device = device
 
     def generate_network(self):
-        model = SimpleDeepQNetwork2(self.dim, self.input_depth, self.nb_actions)
+        model = SimpleDeepQNetwork2(
+            self.dim, self.input_depth, self.nb_actions)
         model.to(self.device)
         return model
 
@@ -72,10 +73,13 @@ if __name__ == "__main__":
 
     dim = 8
 
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
     generator1 = SimpleDeepQNetworkGenerator(
         dim=(dim, dim),
         input_depth=3,
-        nb_actions=4
+        nb_actions=4,
+        device=device
     )
     network1 = generator1.generate_network()
     print(sum(p.numel() for p in network1.parameters() if p.requires_grad))
@@ -87,7 +91,8 @@ if __name__ == "__main__":
     generator2 = SimpleDeepQNetworkGenerator2(
         dim=(dim, dim),
         input_depth=3,
-        nb_actions=4
+        nb_actions=4,
+        device=device
     )
     network2 = generator2.generate_network()
     print(sum(p.numel() for p in network2.parameters() if p.requires_grad))

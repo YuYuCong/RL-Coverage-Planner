@@ -41,75 +41,94 @@ The following arguments can be added to the run command in order to change the d
 * `--loadArguments=` :
   * `folder,name`
   * folder and name of a text file that can be used to load arguments
+  * 参数文件txt
 * `--heightRequired` :
   * indicator whether terrain information should be used or not
+  * 是否使用地形信息
 * `--dim=` :
   * `<dim_x>,<dim_y>`
   * default: 16,16
   * dimension of the environment in x and y direction
+  * 环境维度尺寸
 * `--hFreq=` :
   * `<hFreq_x>,<hFreq_y>`
   * default: 2,2
   * frequency of variation of the terrain (higher values means more variation, the dimension should be a multiple of the frequency)
+  * 地形变化的频率（值越高意味着变化越大，环境维度尺寸应该是频率的倍数）
 * `--oFreq=` :
   * `<oFreq_x>,<oFreq_y>`
   * default: 2,2
   * frequency of the variation of the obstacles (higher values means more variation, the dimension should be a multiple of the frequency)
+  * 障碍物变化的频率（值越高表示变化越大，环境维度尺寸应为频率的倍数）
 * `--fillRatio=` :
   * `<ratio>`
   * default: 0.14
   * initial ratio used to guide obstacle construction (the obstacle ratio will not exact match this fill ratio)
+  * 用于指导障碍物构建的初始比率（障碍物比率大概等于此填充比率）
 * `--loadEnv=` :
   * `<folder>,<name>`
   * folder and name of a file that stores an environment representation
+  * 存储环境表示的文件夹和文件的名称
 * `--movePunish=` :
   * `<punishment>`
   * default: 0.05
   * the punishment given to the agent when moving
+  * 移动惩罚
 * `--terrainPunish=` :
   * `<punishment>`
   * default: 0.05
   * the punishment given to the agent for the terrain difference
+  * 由于地形差异而给予智能体的惩罚
 * `--obstaclePunish=` :
   * `<punishment>`
   * default: 0.5
   * the punishment given to the agent when colliding with an obstacle
+  * 碰撞惩罚
 * `--discoverReward=` :
   * `<reward>`
   * default: 1.0
   * the reward given to the agent when the agent discovers a new tile
+  * 发现新图块的奖励
 * `--coverageReward=` :
   * `<reward>`
   * default: 50.0
   * the reward given tot he agent when the agent has covered all tiles
+  * 全覆盖的最终奖励
 * `--maxStepMultiplier=` :
   * `<multiplier>`
   * default: 2
   * related to the maximum number of steps an agent can do before a run will be ended by the environment
+  * 与环境结束运行之前代理可以执行的最大步骤数相关
 * `--networkGen=` :
   * options: \[simpleQ, simpleQ2\]
   * default: simpleQ
   * indicates the type of network the agent will use
+  * 网络结果的类型
 * `--rlAgent=` :
   * options: \[deepQ, doubleDQ\]
   * default: doubleDQ
   * indicates the type of agent that will be used
+  * 智能体的类型
 * `--gamma=` :
   * `<value>`
   * default: 0.9
   * the gamma value used during training, this value indicates how much value is given to future rewards
+  * 未来奖励相关参数
 * `--epsilonDecay=` :
   * `<value>`
   * default: 2000
   * indicates how rapidly the epsilon values decays, epsilon is used to balance between exploration and exploitation
+  * 表示 epsilon 值衰减的速度，epsilon 用于平衡勘探和开发
 * `--targetUpdate=` :
   * `<value>`
   * default: 1000
   * indicates how frequently the target network is updated with the policy network
+  * 表示目标网络更新策略网络的频率
 * `--nbEpisodes` :
   * `<value>`
   * default: 2000
   * number of episodes the agent is trained on
+  * 训练集数量
 * `--printEvery=` :
   * `<value>`
   * default: 50
@@ -118,13 +137,16 @@ The following arguments can be added to the run command in order to change the d
   * `<value>`
   * default: 250
   * indicates how frequently results are saved
+  * 是否保存没一个测试结果
 * `--softmax=` :
   * options:  \[True, False\]
   * default: False
   * indicates whether softmax action selection is used over epsilon-greedy action selection
+  * softmax是否使用
 * `--savePath=` :
   * `<folder>`
   * folder where the results are saved, should be provided!
+  * 存储路径
 
 ### Visualise training results
 

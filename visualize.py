@@ -135,7 +135,7 @@ def main(argv):
         print("badly formatted command line arguments")
 
     arguments = default_arguments()
-    arguments["loadTrainArgs"] = "D:/Documenten/Studie/2020-2021/Masterproef/Reinforcement-Learner-For-Coverage-Path-Planning/data/test/arguments.txt"
+    arguments["loadTrainArgs"] = "./results/8x_multi/"
     arguments["episodeNb"] = 250
     arguments["visDim"] = (512, 512)
     arguments["stateSize"] = 128

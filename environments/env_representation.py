@@ -156,7 +156,7 @@ class GeneralEnvironmentRepresentation:
 
 
 if __name__ == "__main__":
-    save_path = "D:/Documenten/Studie/2020-2021/Masterproef/Reinforcement-Learner-For-Coverage-Path-Planning/data/"
+    save_path = "/home/narwal/src/RL-Coverage-Planning/data/"
     name = "test_grid.npy"
     obstacle_grid = np.load(save_path + name)
 

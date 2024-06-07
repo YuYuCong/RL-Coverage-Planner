@@ -55,6 +55,7 @@ LONG_OPTIONS = [
 
 
 def main(argv):
+    # 参数解析
     try:
         options, args = getopt.getopt(argv, SHORT_OPTIONS, LONG_OPTIONS)
     except getopt.GetoptError:

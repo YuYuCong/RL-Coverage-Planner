@@ -91,7 +91,8 @@ def initialize_objects(args, trainer_required=False):
     print("Initializing objects...")
 
     # CUDA
-    device = 'cuda' if torch.cuda.is_available() and arguments["cuda"] else 'cpu'
+    device = 'cuda' if torch.cuda.is_available(
+    ) and arguments["cuda"] else 'cpu'
     print(f"DEVICE: {device}")
 
     # ENVIRONMENT GENERATOR
@@ -154,7 +155,7 @@ def initialize_objects(args, trainer_required=False):
         environment.get_nb_actions()
     )
 
-    if  arguments['loadEpisode'] is not None:
+    if arguments['loadEpisode'] is not None:
         agent.load(arguments['loadPath'], arguments['loadEpisode'])
         arguments['loadings'].append(arguments['loadEpisode'])
 
