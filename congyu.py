@@ -1,3 +1,4 @@
+import sys, getopt
 from collections import deque
 import random
 import math
@@ -5,6 +6,8 @@ import torch
 import torch.optim as optim
 import numpy as np
 import matplotlib.pyplot as plt
+
+from load import load_arguments, save_arguments, default_arguments
 
 from environments.noise_generation import NoiseGenerator
 from environments.obstacle_generation import ObstacleMapGenerator
@@ -18,52 +21,6 @@ from networks.network3 import DeepQNetworkGenerator3
 from deep_rl.deep_q_agent import DeepQAgent
 from deep_rl.double_dqn_agent import DoubleDeepQAgent
 from deep_rl.trainer import DeepRLTrainer
-
-
-DEFAULT_ARGUMENTS = {
-    "cuda": False,
-
-    "dim": (16, 16),
-    "hFreq": (2, 2),
-    "oFreq": (2, 2),
-    "fillRatio": 0.14,
-    "loadEnv": None,
-
-    "movePunish": 0.05,
-    "terrainPunish": 0.05,
-    "obstaclePunish": 0.5,
-    "discoverReward": 1.0,
-    "coverageReward": 50.0,
-    "maxStepMultiplier": 2,
-    "agentSize": 1,
-    "fov": None,
-    "turn": False,
-    "terrain": False,
-
-    "networkGen": "simpleQ",
-    "rlAgent": "deepQ",
-    "inputMatch": True,
-    "agentInpDepth": 3,
-    "optim": "rmsProp",
-    "lr": 0.01,
-    "gamma": 0.9,
-    "epsilonDecay": 2000,
-    "targetUpdate": 1000,
-    "queueLength": 5000,
-
-    "loadEpisode": None,
-    "loadPath": "./data/test/",
-    "loadings": [],
-
-    "nbEpisodes": 2000,
-    "printEvery": 50,
-    "saveEvery": 250,
-    "savePath": "./data/"
-}
-
-
-def default_arguments():
-    return DEFAULT_ARGUMENTS.copy()
 
 
 class GeneralEnvironmentGenerator:
@@ -777,10 +734,179 @@ class GeneralEnvironment:
         return mask
 
 
-def initialize_objects(args=default_arguments()):
-    # 参数
-    arguments = args
 
+def read_arguments(argv):
+    
+    # 参数解析
+    SHORT_OPTIONS = ""
+    LONG_OPTIONS = [
+        "loadAgent=",
+        
+        "loadArguments=",
+
+        "disableCuda",
+
+        "dim=",
+        "hFreq=",
+        "oFreq=",
+        "fillRatio=",
+        "loadEnv=",
+
+        "agentSize=",
+        "fov=",
+        "turn",
+        "terrain",
+
+        "movePunish=",
+        "terrainPunish=",
+        "obstaclePunish=",
+        "discoverReward=",
+        "coverageReward=",
+        "maxStepMultiplier=",
+
+        "gamma=",
+        "networkGen=",
+        "rlAgent=",
+        "epsilonDecay=",
+        "targetUpdate=",
+        "queueLength=",
+        "optim=",
+        "lr=",
+
+        "nbEpisodes=",
+        "printEvery=",
+        "saveEvery=",
+        "savePath="
+    ]
+
+    try:
+        options, args = getopt.getopt(argv, SHORT_OPTIONS, LONG_OPTIONS)
+    except getopt.GetoptError:
+        print("badly formatted command line arguments")
+
+
+    arguments = default_arguments()
+
+    for option, argument in options:
+        if option == "--loadAgent":
+            argument_split = argument.split(",")
+            arguments.update(load_arguments(argument_split[0], "arguments"))
+            arguments["loadPath"] = argument_split[0]
+            arguments["loadEpisode"] = int(argument_split[1])
+
+        if option == "--loadArguments":
+            argument_split = argument.split(",")
+            arguments.update(load_arguments(argument_split[0], argument_split[1]))
+
+        if option == "--disableCuda":
+            arguments["cuda"] = False
+
+        if option == "--dim":
+            arguments["dim"] = tuple(tuple(map(int, argument.split(","))))
+
+        if option == "--hFreq":
+            arguments["hFreq"] = tuple(map(int, argument.split(",")))
+
+        if option == "--oFreq":
+            arguments["oFreq"] = tuple(map(int, argument.split(",")))
+
+        if option == "--fillRatio":
+            arguments["fillRatio"] = float(argument)
+
+        if option == "--loadEnv":
+            arguments["loadEnv"] = tuple(argument.split(","))
+
+        if option == "--agentSize":
+            arguments["agentSize"] = int(argument)
+
+        if option == "--fov":
+            arguments["fov"] = int(argument)
+
+        if option == "--turn":
+            arguments["turn"] = True
+
+        if option == "--terrain":
+            arguments["terrain"] = True
+
+        if option == "--movePunish":
+            arguments["movePunish"] = float(argument)
+
+        if option == "--terrainPunish":
+            arguments["terrainPunish"] = float(argument)
+
+        if option == "--obstaclePunish":
+            arguments["obstaclePunish"] = float(argument)
+
+        if option == "--discoverReward":
+            arguments["discoverReward"] = float(argument)
+
+        if option == "--coverageReward":
+            arguments["coverageReward"] = float(argument)
+
+        if option == "--maxStepMultiplier":
+            arguments["maxStepMultiplier"] = int(argument)
+
+        if option == "--gamma":
+            arguments["gamma"] = float(argument)
+            assert(float(argument) <= 1.0)
+
+        if option == "--networkGen":
+            if argument in GENERATORS:
+                arguments["networkGen"] = argument
+            else:
+                raise Exception("TRAIN.py: given network generator is not defined...")
+
+        if option == "--optim":
+            if argument in OPTIMIZERS:
+                arguments["optim"] = argument
+            else:
+                raise Exception("TRAIN.py: given optimizer is not defined...")
+
+        if option == "--lr":
+            arguments["lr"] = float(argument)
+
+        if option == "--rlAgent":
+            if argument in AGENTS:
+                arguments["rlAgent"] = argument
+            else:
+                raise Exception("TRAIN.py: given agent is not defined...")
+
+        if option == "--epsilonDecay":
+            arguments["epsilonDecay"] = int(argument)
+
+        if option == "--targetUpdate":
+            arguments["targetUpdate"] = int(argument)
+
+        if option == "--queueLength":
+            arguments["queueLength"] = int(argument)
+
+        if option == "--nbEpisodes":
+            arguments["nbEpisodes"] = int(argument)
+
+        if option == "--printEvery":
+            arguments["printEvery"] = int(argument)
+
+        if option == "--saveEvery":
+            arguments["saveEvery"] = int(argument)
+
+        if option == "--savePath":
+            arguments["savePath"] = argument
+
+    print(arguments)                    
+    save_arguments(arguments, arguments["savePath"])
+    return arguments 
+
+
+def initialize_objects(arguments):
+    """成员初始化
+
+    Args:
+        arguments (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
+    
     print("Initializing objects...")
 
     # CUDA，不可使用，无用
@@ -864,13 +990,16 @@ def initialize_objects(args=default_arguments()):
     return environment, agent, trainer
 
 
-def main():
+def main(argv):
+    # 参数读取
+    arguments = read_arguments(argv)
+             
     # 初始化
-    env, agent, trainer = initialize_objects()
+    env, agent, trainer = initialize_objects(arguments)
 
     # 开始训练
     trainer.train()
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])

@@ -128,16 +128,17 @@ The following arguments can be added to the run command in order to change the d
   * `<value>`
   * default: 2000
   * number of episodes the agent is trained on
-  * 训练集数量
+  * 训练轮次数量
 * `--printEvery=` :
   * `<value>`
   * default: 50
   * indicates how frequently results are printed to the command line
+  * 每隔多少轮在终端输出一次结果
 * `--saveEvery=` :
   * `<value>`
   * default: 250
   * indicates how frequently results are saved
-  * 是否保存没一个测试结果
+  * 每隔多少轮保存一次测试结果
 * `--softmax=` :
   * options:  \[True, False\]
   * default: False

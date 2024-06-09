@@ -9,8 +9,8 @@ from environments.general_environment import GeneralEnvironment
 
 SHORT_OPTIONS = ""
 LONG_OPTIONS = [
-    "loadTrainArgs=",
-    "episodeNb=",
+    "loading_path=",
+    "viz_episode_index=",
     "loadEnv=",
     "visDim=",
     "stateSize=",
@@ -135,34 +135,36 @@ def main(argv):
         print("badly formatted command line arguments")
 
     arguments = default_arguments()
-    arguments["loadTrainArgs"] = "./results/8x_multi/"
-    arguments["episodeNb"] = 250
+    arguments["loading_path"] = "./results/8x_multi/"
+    arguments["viz_episode_index"] = 250     # 可视化时采用第几轮训练的结果
     arguments["visDim"] = (512, 512)
     arguments["stateSize"] = 128
     arguments["fps"] = 2
     arguments["pause"] = False
     arguments["trace"] = False
 
-    for option, argument in options:
-        if option == "--loadTrainArgs":
-            arguments.update(load_arguments(argument, "arguments"))
-            arguments["episodeNb"] = arguments["nbEpisodes"]
-            arguments["loadTrainArgs"] = argument
+    for option, val in options:
+        if option == "--loading_path":
+            # 从训练参数中更新文件
+            arguments.update(load_arguments(val, "arguments.json"))
+            arguments["loading_path"] = val
+            arguments["viz_episode_index"] = arguments["nbEpisodes"] # 使用最后的训练结果可视化
+
+    for option, val in options:
+        if option == "--viz_episode_index":
+            arguments["viz_episode_index"] = int(val)
 
         if option == "--loadEnv":
-            arguments["loadEnv"] = tuple(argument.split(","))
+            arguments["loadEnv"] = tuple(val.split(","))
 
         if option == "--visDim":
-            arguments["visDim"] = tuple(map(int, argument.split(",")))
+            arguments["visDim"] = tuple(map(int, val.split(",")))
 
         if option == "--stateSize":
-            arguments["stateSize"] = int(argument)
-
-        if option == "--episodeNb":
-            arguments["episodeNb"] = int(argument)
+            arguments["stateSize"] = int(val)
 
         if option == "--fps":
-            arguments["fps"] = int(argument)
+            arguments["fps"] = int(val)
 
         if option == "--pause":
             arguments["pause"] = True
@@ -171,10 +173,11 @@ def main(argv):
             arguments["trace"] = True
 
     arguments["cuda"] = False
+    print(arguments)
 
     # INITIALISE OBJECTS
-    env, agent = initialize_objects(arguments)
-    agent.load(arguments["loadTrainArgs"], arguments["episodeNb"])
+    env, agent, _ = initialize_objects(arguments)
+    agent.load(arguments["loading_path"], arguments["viz_episode_index"])
     agent.evaluate()
 
     # INITIALISE PYGAME

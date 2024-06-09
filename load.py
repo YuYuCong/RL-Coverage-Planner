@@ -49,13 +49,13 @@ DEFAULT_ARGUMENTS = {
     "queueLength": 5000,
 
     "loadEpisode": None,
-    "loadPath": "D:/Documenten/Studie/2020-2021/Masterproef/Reinforcement-Learner-For-Coverage-Path-Planning/data/test/",
+    "loadPath": "./data/test/",
     "loadings": [],
 
     "nbEpisodes": 2000,
     "printEvery": 50,
     "saveEvery": 250,
-    "savePath": "D:/Documenten/Studie/2020-2021/Masterproef/Reinforcement-Learner-For-Coverage-Path-Planning/data/"
+    "savePath": "./data/"
 }
 
 GENERATORS = {
@@ -78,53 +78,53 @@ def default_arguments():
     return DEFAULT_ARGUMENTS.copy()
 
 
-def load_arguments(path, name="arguments"):
-    with open(f"{path}{name}.txt") as input_file:
+def load_arguments(path, name="arguments.json"):
+    with open(path+name, 'r') as input_file:
         return json.load(input_file)
 
 
-def initialize_objects(args, trainer_required=False):
-    # ARGUMENTS
-    arguments = default_arguments()
-    arguments.update(args)
+def save_arguments(arguments_json, path, name="arguments.json"):
+    with open(path+name, 'w') as save_file:
+        json.dump(arguments_json, save_file)
 
+
+def initialize_objects(arguments):
+    """成员初始化
+
+    Args:
+        arguments (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
+    
     print("Initializing objects...")
 
-    # CUDA
-    device = 'cuda' if torch.cuda.is_available(
-    ) and arguments["cuda"] else 'cpu'
+    # CUDA，不可使用，无用
+    device = 'cuda' if (torch.cuda.is_available(
+    ) and arguments["cuda"]) else 'cpu'
     print(f"DEVICE: {device}")
 
-    # ENVIRONMENT GENERATOR
+    # 环境生成器
     env_generator = GeneralEnvironmentGenerator(arguments["dim"])
     env_generator.set_obstacle_frequency(arguments["oFreq"])
     env_generator.set_fill_ratio(arguments["fillRatio"])
     env_generator.set_height_frequency(arguments["hFreq"])
 
-    # load an environment
-    if arguments["loadEnv"] is not None:
-        env_repr = env_generator.generate_environment()
-
-        path, name = arguments["loadEnv"]
-        env_repr.load(path, name)
-
-        env_generator.load_env_representation(env_repr)
-
-        arguments["dim"] = env_generator.get_dimension()
-
-    # ENVIRONMENT
-    # environment characteristics
+    # 环境生成
     environment = GeneralEnvironment(env_generator)
     environment.set_agent_size(arguments["agentSize"])
     environment.set_field_of_view(arguments["fov"])
     environment.activate_turning(arguments["turn"])
     environment.activate_terrain(arguments["terrain"])
 
+    # 惩罚
     # reward signal - punishment values
     GeneralEnvironment.MOVE_PUNISH = arguments["movePunish"]
     GeneralEnvironment.TERR_PUNISH = arguments["terrainPunish"]
     GeneralEnvironment.OBSTACLE_PUNISH = arguments["obstaclePunish"]
 
+    # 奖励
     # reward signal - reward values
     GeneralEnvironment.DISC_REWARD = arguments["discoverReward"]
     GeneralEnvironment.CC_REWARD = arguments["coverageReward"]
@@ -132,9 +132,14 @@ def initialize_objects(args, trainer_required=False):
     # max step multiplier
     GeneralEnvironment.MAX_STEP_MULTIPLIER = arguments["maxStepMultiplier"]
 
-    # NETWORK GENERATOR
+    # 网络结构
     state_shape = environment.get_state_shape()
-    network_generator = GENERATORS[arguments["networkGen"]](
+    NetworkGenerator = {
+        "simpleQ": SimpleDeepQNetworkGenerator,
+        "simpleQ2": SimpleDeepQNetworkGenerator2,
+        "network3": DeepQNetworkGenerator3
+    }
+    network_generator = NetworkGenerator[arguments["networkGen"]](
         (state_shape[1], state_shape[2]),
         state_shape[0],
         environment.get_nb_actions(),
@@ -142,6 +147,10 @@ def initialize_objects(args, trainer_required=False):
     )
 
     # RL AGENT
+    AGENTS = {
+        "deepQ": DeepQAgent,
+        "doubleDQ": DoubleDeepQAgent
+    }
     agent_class = AGENTS[arguments["rlAgent"]]
     agent_class.EPSILON_DECAY = arguments["epsilonDecay"]
     agent_class.GAMMA = arguments["gamma"]
@@ -149,6 +158,9 @@ def initialize_objects(args, trainer_required=False):
     agent_class.QUEUE_LENGTH = arguments["queueLength"]
     agent_class.LEARNING_RATE = arguments["lr"]
 
+    OPTIMIZERS = {
+        "rmsProp": optim.RMSprop
+    }
     agent = agent_class(
         network_generator,
         OPTIMIZERS[arguments["optim"]],
@@ -159,37 +171,27 @@ def initialize_objects(args, trainer_required=False):
         agent.load(arguments['loadPath'], arguments['loadEpisode'])
         arguments['loadings'].append(arguments['loadEpisode'])
 
-    if not trainer_required:
-        return environment, agent
-
-    # TRAINER
+    # 训练器
     DeepRLTrainer.NB_EPISODES = arguments["nbEpisodes"]
     DeepRLTrainer.INFO_EVERY = arguments["printEvery"]
     DeepRLTrainer.SAVE_EVERY = arguments["saveEvery"]
     DeepRLTrainer.DEVICE = device
-
     trainer = DeepRLTrainer(environment, agent, arguments["savePath"])
 
     return environment, agent, trainer
 
 
+
 if __name__ == "__main__":
-    path = "D:/Documenten/Studie/2020-2021/Masterproef/Reinforcement-Learner-For-Coverage-Path-Planning/data/8x_terrain/trial_3/"
-    arguments = load_arguments(path, "arguments")
-
-    env, agent = initialize_objects(arguments)
-
-    print(env.MOVE_PUNISHMENT)
-    print(env.TERRAIN_PUNISHMENT)
-    print(env.OBSTACLE_PUNISHMENT)
-    print(env.DISCOVER_REWARD)
-    print(env.COVERAGE_REWARD)
-    print(env.MAX_STEP_MULTIPLIER)
-
-    print(agent.GAMMA)
-    print(agent.EPSILON_DECAY)
-    print(agent.TARGET_UPDATE)
-
-    reset1 = env.reset()
-    reset2 = env.reset()
-    print(reset1 == reset2)
+    path = "./data/test/"
+    name="arguments_test.json"
+    
+    # save
+    arguments = default_arguments()
+    print(arguments)
+    save_arguments(arguments, path, name)
+    
+    # load
+    arguments_loaded = load_arguments(path, name)
+    print(arguments_loaded)
+    
