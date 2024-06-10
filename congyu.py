@@ -1,4 +1,5 @@
-import sys, getopt
+import sys
+import getopt
 from collections import deque
 import random
 import math
@@ -734,14 +735,13 @@ class GeneralEnvironment:
         return mask
 
 
-
 def read_arguments(argv):
-    
+
     # 参数解析
     SHORT_OPTIONS = ""
     LONG_OPTIONS = [
         "loadAgent=",
-        
+
         "loadArguments=",
 
         "disableCuda",
@@ -784,8 +784,12 @@ def read_arguments(argv):
     except getopt.GetoptError:
         print("badly formatted command line arguments")
 
-
     arguments = default_arguments()
+
+    for option, argument in options:
+        if option == "--loadArguments":
+            arguments.update(load_arguments(argument, name="arguments.json"))
+            break
 
     for option, argument in options:
         if option == "--loadAgent":
@@ -793,10 +797,6 @@ def read_arguments(argv):
             arguments.update(load_arguments(argument_split[0], "arguments"))
             arguments["loadPath"] = argument_split[0]
             arguments["loadEpisode"] = int(argument_split[1])
-
-        if option == "--loadArguments":
-            argument_split = argument.split(",")
-            arguments.update(load_arguments(argument_split[0], argument_split[1]))
 
         if option == "--disableCuda":
             arguments["cuda"] = False
@@ -848,13 +848,14 @@ def read_arguments(argv):
 
         if option == "--gamma":
             arguments["gamma"] = float(argument)
-            assert(float(argument) <= 1.0)
+            assert (float(argument) <= 1.0)
 
         if option == "--networkGen":
             if argument in GENERATORS:
                 arguments["networkGen"] = argument
             else:
-                raise Exception("TRAIN.py: given network generator is not defined...")
+                raise Exception(
+                    "TRAIN.py: given network generator is not defined...")
 
         if option == "--optim":
             if argument in OPTIMIZERS:
@@ -892,9 +893,9 @@ def read_arguments(argv):
         if option == "--savePath":
             arguments["savePath"] = argument
 
-    print(arguments)                    
+    print(arguments)
     save_arguments(arguments, arguments["savePath"])
-    return arguments 
+    return arguments
 
 
 def initialize_objects(arguments):
@@ -906,7 +907,7 @@ def initialize_objects(arguments):
     Returns:
         _type_: _description_
     """
-    
+
     print("Initializing objects...")
 
     # CUDA，不可使用，无用
@@ -993,7 +994,7 @@ def initialize_objects(arguments):
 def main(argv):
     # 参数读取
     arguments = read_arguments(argv)
-             
+
     # 初始化
     env, agent, trainer = initialize_objects(arguments)
 
