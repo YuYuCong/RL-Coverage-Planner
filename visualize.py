@@ -136,19 +136,20 @@ def main(argv):
 
     arguments = default_arguments()
     arguments["loading_path"] = "./results/8x_multi/"
+    for option, val in options:
+        if option == "--loading_path":
+            arguments["loading_path"] = val
+            break
+    print(arguments["loading_path"])
+    arguments.update(load_arguments(arguments["loading_path"], "arguments.json"))        
+
     arguments["viz_episode_index"] = 250     # 可视化时采用第几轮训练的结果
+    arguments["viz_episode_index"] = arguments["nbEpisodes"] # 使用最后的训练结果可视化
     arguments["visDim"] = (512, 512)
     arguments["stateSize"] = 128
     arguments["fps"] = 2
     arguments["pause"] = False
     arguments["trace"] = False
-
-    for option, val in options:
-        if option == "--loading_path":
-            # 从训练参数中更新文件
-            arguments.update(load_arguments(val, "arguments.json"))
-            arguments["loading_path"] = val
-            arguments["viz_episode_index"] = arguments["nbEpisodes"] # 使用最后的训练结果可视化
 
     for option, val in options:
         if option == "--viz_episode_index":
