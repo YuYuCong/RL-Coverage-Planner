@@ -19,7 +19,7 @@ class DeepQAgent:
 
     BATCH_SIZE = 32
 
-    LEARNING_RATE = 0.01
+    __LEARNING_RATE = 0.01
 
     def __init__(self, network_generator, optim_class, nb_actions):
         self.policy_net = network_generator.generate_network()
@@ -29,7 +29,8 @@ class DeepQAgent:
 
         self.replay_buffer = deque(maxlen=DeepQAgent.QUEUE_LENGTH)
         self.epsilon = DeepQAgent.EPSILON_START
-        self.optimizer = optim_class(self.policy_net.parameters(), lr=DeepQAgent.LEARNING_RATE)
+        self.optimizer = optim_class(
+            self.policy_net.parameters(), lr=DeepQAgent.__LEARNING_RATE)
         self.batch_size = DeepQAgent.BATCH_SIZE
 
         self.step_counter = 1
@@ -41,7 +42,8 @@ class DeepQAgent:
         if not soft_max:
             if random.random() > self.epsilon:
                 with torch.no_grad():
-                    state_eval = self.policy_net(torch.unsqueeze(state_tensor, 0))[0]
+                    state_eval = self.policy_net(
+                        torch.unsqueeze(state_tensor, 0))[0]
                     return torch.argmax(state_eval).item()
 
             return random.randrange(self.nb_actions)
@@ -58,13 +60,16 @@ class DeepQAgent:
         self.epsilon = self.EPSILON_END + diff * math.exp(exponent)
 
     def save(self, path, episode_nb):
-        torch.save(self.policy_net.state_dict(), path + f"deep_q_agent_{episode_nb}.pt")
+        torch.save(self.policy_net.state_dict(), path +
+                   f"deep_q_agent_{episode_nb}.pt")
 
     def load(self, path, episode_nb, device=None):
         if device is not None:
-            self.policy_net.load_state_dict(torch.load(path + f"deep_q_agent_{episode_nb}.pt", map_location=device))
+            self.policy_net.load_state_dict(torch.load(
+                path + f"deep_q_agent_{episode_nb}.pt", map_location=device))
         else:
-            self.policy_net.load_state_dict(torch.load(path + f"deep_q_agent_{episode_nb}.pt"))
+            self.policy_net.load_state_dict(torch.load(
+                path + f"deep_q_agent_{episode_nb}.pt"))
         self.target_net.load_state_dict(self.policy_net.state_dict())
 
     def evaluate(self):
@@ -86,12 +91,15 @@ class DeepQAgent:
         next_state_batch = torch.stack(mini_batch.next_state)
         non_final_mask = ~torch.stack(mini_batch.done)
 
-        state_action_values = self.policy_net(state_batch).gather(1, action_batch)
+        state_action_values = self.policy_net(
+            state_batch).gather(1, action_batch)
         next_state_values = torch.zeros(self.batch_size, device=device)
-        next_state_values[non_final_mask] = torch.max(self.target_net(next_state_batch), dim=1)[0][non_final_mask]
+        next_state_values[non_final_mask] = torch.max(
+            self.target_net(next_state_batch), dim=1)[0][non_final_mask]
         expected_values = (next_state_values * DeepQAgent.GAMMA) + reward_batch
 
-        loss = F.smooth_l1_loss(state_action_values, expected_values.unsqueeze(1))
+        loss = F.smooth_l1_loss(state_action_values,
+                                expected_values.unsqueeze(1))
 
         self.optimizer.zero_grad()
         loss.backward()

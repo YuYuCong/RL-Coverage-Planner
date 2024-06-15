@@ -734,6 +734,18 @@ class GeneralEnvironment:
 
         return mask
 
+AGENTS = {
+        "deepQ": DeepQAgent,
+        "doubleDQ": DoubleDeepQAgent
+    }
+OPTIMIZERS = {
+        "rmsProp": optim.RMSprop
+    }
+NetworkGenerators = {
+        "simpleQ": SimpleDeepQNetworkGenerator,
+        "simpleQ2": SimpleDeepQNetworkGenerator2,
+        "network3": DeepQNetworkGenerator3
+    }
 
 def read_arguments(argv):
 
@@ -851,7 +863,7 @@ def read_arguments(argv):
             assert (float(argument) <= 1.0)
 
         if option == "--networkGen":
-            if argument in GENERATORS:
+            if argument in NetworkGenerators:
                 arguments["networkGen"] = argument
             else:
                 raise Exception(
@@ -944,12 +956,7 @@ def initialize_objects(arguments):
 
     # 网络结构
     state_shape = environment.get_state_shape()
-    NetworkGenerator = {
-        "simpleQ": SimpleDeepQNetworkGenerator,
-        "simpleQ2": SimpleDeepQNetworkGenerator2,
-        "network3": DeepQNetworkGenerator3
-    }
-    network_generator = NetworkGenerator[arguments["networkGen"]](
+    network_generator = NetworkGenerators[arguments["networkGen"]](
         (state_shape[1], state_shape[2]),
         state_shape[0],
         environment.get_nb_actions(),
@@ -957,10 +964,6 @@ def initialize_objects(arguments):
     )
 
     # RL AGENT
-    AGENTS = {
-        "deepQ": DeepQAgent,
-        "doubleDQ": DoubleDeepQAgent
-    }
     agent_class = AGENTS[arguments["rlAgent"]]
     agent_class.EPSILON_DECAY = arguments["epsilonDecay"]
     agent_class.GAMMA = arguments["gamma"]
@@ -968,9 +971,6 @@ def initialize_objects(arguments):
     agent_class.QUEUE_LENGTH = arguments["queueLength"]
     agent_class.LEARNING_RATE = arguments["lr"]
 
-    OPTIMIZERS = {
-        "rmsProp": optim.RMSprop
-    }
     agent = agent_class(
         network_generator,
         OPTIMIZERS[arguments["optim"]],
